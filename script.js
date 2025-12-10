@@ -182,6 +182,7 @@ function runSimulation() {
     let totalWait = 0;
     let totalFlipProb = 0; // Accumulator for avg noise
     let bitErrors = 0;
+    let packetLossCount = 0;
     const serviceRate = 1.0; 
     
     const totalBits = inputStr.length * 8; // Approx 8 bits per char
@@ -216,17 +217,18 @@ function runSimulation() {
         // Construct visual output
         if(charIsCorrupt) {
             outputStr += randomChar();
+            packetLossCount++;
+            
+            // LOGGING CHANGE: List every corrupted packet
+            consoleDiv.innerText += `[LOSS] Packet ${i} ('${inputStr[i]}'): Wait ${waitTime.toFixed(3)}s -> FlipProb ${(probFlip*100).toFixed(1)}%\n`;
         } else {
             outputStr += inputStr[i];
         }
-
-        // Detailed log for first 3 packets
-        if(i < 3) {
-             consoleDiv.innerText += `Packet ${i}: Wait ${waitTime.toFixed(3)}s -> BitFlipProb ${(probFlip*100).toFixed(1)}% -> ${charIsCorrupt ? "CORRUPT" : "OK"}\n`;
-        }
     }
 
-    consoleDiv.innerText += `...\n> Transmission Complete.\n> Received: "${outputStr}"`;
+    consoleDiv.innerText += `...\n> Transmission Complete.\n`;
+    consoleDiv.innerText += `> Total Corrupted Packets: ${packetLossCount} / ${inputStr.length}\n`;
+    consoleDiv.innerText += `> Received: "${outputStr}"`;
 
     const avgWait = totalWait / inputStr.length;
     const avgFlipProb = totalFlipProb / inputStr.length;
