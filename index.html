@@ -63,7 +63,7 @@
 
             <section id="erasure" style="display:none;">
                 <h1>2. Erasure Channel Capacity</h1>
-                <p>In this model, if a qubit waits too long, it vanishes (becomes an erasure $\mathcal{E}$)[cite: 161].</p>
+                <p>In this model, if a qubit waits too long, it vanishes (becomes an erasure $\mathcal{E}$).</p>
 
                 <div class="dashboard">
                     <div class="controls panel">
@@ -92,9 +92,11 @@
                     </div>
 
                     <div class="chart-container panel">
-                        <canvas id="capacityChart"></canvas>
+                        <div class="chart-wrapper">
+                            <canvas id="capacityChart"></canvas>
+                        </div>
                         <div class="caption">
-                            <strong>Theorem 4 Insight:</strong> <span style="color:#4caf50">M/D/1 (Deterministic)</span> is always better than <span style="color:#2196f3">M/M/1 (Random)</span> because Jensen's Inequality favors stability[cite: 284].
+                            <strong>Theorem 4 Insight:</strong> <span style="color:#4caf50">M/D/1 (Deterministic)</span> is always better than <span style="color:#2196f3">M/M/1 (Random)</span> because Jensen's Inequality favors stability.
                         </div>
                     </div>
                 </div>
@@ -111,16 +113,17 @@
                     </div>
                     
                     <div class="sim-controls">
-                        <div>
+                        <div class="control-group">
                             <label>Arrival Rate ($\lambda$): <span id="simLambdaVal">0.8</span></label>
-                            <input type="range" id="simLambda" min="0.1" max="0.99" step="0.1" value="0.8">
+                            <input type="range" id="simLambda" min="0.1" max="0.99" step="0.01" value="0.8">
                         </div>
-                        <div>
+                        <div class="control-group">
                             <label>Decoherence ($\kappa$): <span id="simKappaVal">0.2</span></label>
                             <input type="range" id="simKappa" min="0.05" max="1.0" step="0.05" value="0.2">
                         </div>
-                        <button class="run-btn" onclick="runSimulation()">Transmitting Data...</button>
                     </div>
+                    
+                    <button class="action-btn run-btn" onclick="runSimulation()">Transmitting Data...</button>
 
                     <div class="sim-output">
                         <div class="console">
@@ -144,22 +147,22 @@
                     <div class="card">
                         <div class="number">1</div>
                         <h3>Don't Maximize Throughput</h3>
-                        <p>In classical networks, we push $\lambda \to \mu$. In quantum networks, this is fatal. The "Sweet Spot" $\lambda^*$ is often significantly lower than the server rate to prevent queue buildup[cite: 49].</p>
+                        <p>In classical networks, we push $\lambda \to \mu$. In quantum networks, this is fatal. The "Sweet Spot" $\lambda^*$ is often significantly lower than the server rate to prevent queue buildup.</p>
                     </div>
                     <div class="card">
                         <div class="number">2</div>
                         <h3>Kill the Jitter</h3>
-                        <p>Deterministic processing times ($M/D/1$) are strictly better than variable ones. Quantum gates should be designed for consistency[cite: 74].</p>
+                        <p>Deterministic processing times ($M/D/1$) are strictly better than variable ones. Quantum gates should be designed for consistency.</p>
                     </div>
                     <div class="card">
                         <div class="number">3</div>
                         <h3>Side Information Helps</h3>
-                        <p>Proposition 1 highlights that if the receiver knows the exact arrival/departure times, capacity increases because timing data removes uncertainty about the "rot"[cite: 116].</p>
+                        <p>Proposition 1 highlights that if the receiver knows the exact arrival/departure times, capacity increases because timing data removes uncertainty about the "rot".</p>
                     </div>
                     <div class="card">
                         <div class="number">4</div>
                         <h3>Beyond Quantum</h3>
-                        <p>These models apply to any system with "impatience," such as Crowdsourcing (workers get bored) or Real-time IoT (data becomes stale)[cite: 55].</p>
+                        <p>These models apply to any system with "impatience," such as Crowdsourcing (workers get bored) or Real-time IoT (data becomes stale).</p>
                     </div>
                 </div>
             </section>
