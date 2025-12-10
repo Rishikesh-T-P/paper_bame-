@@ -1,237 +1,228 @@
-// --- Global Variable for Chart ---
-let myChart;
+// Global Chart Variable
+let capacityChart;
 
-// --- Navigation Logic ---
-function switchTab(tabId) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+// --- NAVIGATION LOGIC ---
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+    // Remove active class from nav
+    document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
     
-    // Reset Sidebar Buttons
-    document.querySelectorAll('.nav-btn').forEach(el => {
-        el.classList.remove('bg-slate-800', 'text-white', 'border-indigo-500', 'border-emerald-500', 'border-rose-500', 'border-amber-500');
-        el.classList.add('text-slate-300', 'border-transparent');
-    });
-    
-    // Show Target Tab
-    document.getElementById(tabId).classList.add('active');
-    
-    // Highlight Button
-    const btn = document.getElementById('btn-' + tabId);
-    btn.classList.remove('text-slate-300', 'border-transparent');
-    btn.classList.add('bg-slate-800', 'text-white');
-    
-    // Add specific border color based on tab
-    if(tabId === 'problem') btn.classList.add('border-indigo-500');
-    if(tabId === 'erasure') btn.classList.add('border-emerald-500');
-    if(tabId === 'bitflip') btn.classList.add('border-rose-500');
-    if(tabId === 'insights') btn.classList.add('border-amber-500');
-
-    // --- CRITICAL FIX FOR CHART.JS ---
-    // Chart.js cannot render on a hidden canvas (width=0). 
-    // When switching to the erasure tab, we must manually trigger a resize/update.
-    if (tabId === 'erasure' && window.myChart) {
-        setTimeout(() => {
-            window.myChart.resize();
-            window.myChart.update();
-        }, 50); // Short delay to allow CSS display:block to apply
+    // Show target section
+    document.getElementById(sectionId).style.display = 'block';
+    // Add active class to clicked nav item
+    const navItems = document.querySelectorAll('.nav-links li');
+    if(sectionId === 'problem') navItems[0].classList.add('active');
+    if(sectionId === 'erasure') {
+        navItems[1].classList.add('active');
+        initChart(); // Render chart when this tab is opened
     }
+    if(sectionId === 'bitflip') navItems[2].classList.add('active');
+    if(sectionId === 'insights') navItems[3].classList.add('active');
 }
 
-// --- Initialize Chart on Load ---
-document.addEventListener("DOMContentLoaded", function() {
-    const ctx = document.getElementById('capacityChart').getContext('2d');
-    const kappaSlider = document.getElementById('kappa-slider');
-    const lambdaSlider = document.getElementById('lambda-slider');
-    const valKappa = document.getElementById('val-kappa');
-    const valLambda = document.getElementById('val-lambda');
-    const resMM1 = document.getElementById('res-mm1');
-    const resMD1 = document.getElementById('res-md1');
+// --- ERASURE CHANNEL LOGIC (Theorems 2 & 3) ---
 
-    window.myChart = new Chart(ctx, {
+// M/M/1 Capacity Formula: C = lambda(1-lambda) / (1 - alpha*lambda)
+// where alpha = 1 / (1 + kappa)
+function calcMM1(lambda, kappa) {
+    const alpha = 1 / (1 + kappa);
+    const numerator = lambda * (1 - lambda);
+    const denominator = 1 - (alpha * lambda);
+    return Math.max(0, numerator / denominator);
+}
+
+// M/D/1 Capacity Formula (Theorem 3 & 4)
+// where alpha = (1 - exp(-kappa)) / kappa
+function calcMD1(lambda, kappa) {
+    const alpha = (1 - Math.exp(-kappa)) / kappa;
+    const numerator = lambda * (1 - lambda);
+    const denominator = 1 - (alpha * lambda);
+    return Math.max(0, numerator / denominator);
+}
+
+// Update Dashboard function
+function updateDashboard() {
+    const kappa = parseFloat(document.getElementById('kappaSlider').value);
+    const lambda = parseFloat(document.getElementById('lambdaSlider').value);
+
+    // Update Text
+    document.getElementById('kappaValue').innerText = kappa.toFixed(2);
+    document.getElementById('lambdaValue').innerText = lambda.toFixed(2);
+
+    // Calculate current point values
+    const mm1Val = calcMM1(lambda, kappa);
+    const md1Val = calcMD1(lambda, kappa);
+
+    document.getElementById('mm1-stat').innerText = mm1Val.toFixed(3);
+    document.getElementById('md1-stat').innerText = md1Val.toFixed(3);
+
+    // Update Chart Data
+    updateChart(kappa, lambda);
+}
+
+// Initialize Chart.js
+function initChart() {
+    if(capacityChart) return; // Prevent re-init
+
+    const ctx = document.getElementById('capacityChart').getContext('2d');
+    
+    // Generate data points for lambda 0 to 1
+    const labels = [];
+    for(let i=0; i<1; i+=0.02) labels.push(i.toFixed(2));
+
+    capacityChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [], 
-            datasets: [
-                {
-                    label: 'M/M/1 (Random Service)',
-                    borderColor: '#2563EB',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    data: [],
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 0,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'M/D/1 (Deterministic)',
-                    borderColor: '#10B981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.0)',
-                    borderDash: [5, 5],
-                    data: [],
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 6
-                }
-            ]
+            labels: labels,
+            datasets: [{
+                label: 'M/M/1 (Random)',
+                borderColor: '#2196f3',
+                data: [],
+                fill: false,
+                tension: 0.4
+            }, {
+                label: 'M/D/1 (Deterministic)',
+                borderColor: '#4caf50',
+                data: [],
+                fill: false,
+                tension: 0.4
+            },
+            {
+                label: 'Current Operating Point',
+                borderColor: '#e14eca',
+                backgroundColor: '#e14eca',
+                data: [],
+                pointRadius: 6,
+                type: 'scatter'
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { 
-                    title: { display: true, text: 'Arrival Rate (λ)' }, 
-                    min: 0, max: 1,
-                    grid: { display: false }
-                },
-                y: { 
-                    title: { display: true, text: 'Capacity (bits/sec)' }, 
-                    min: 0, max: 1,
-                    border: { dash: [4, 4] }
-                }
+                x: { title: { display: true, text: 'Arrival Rate (λ)' }, grid: {color: '#444'} },
+                y: { title: { display: true, text: 'Capacity (bits/sec)' }, grid: {color: '#444'}, min:0, max: 0.6 }
             },
             plugins: {
-                legend: { position: 'top' },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { family: 'Inter', size: 13 },
-                    bodyFont: { family: 'Inter', size: 13 },
-                    padding: 10,
-                    cornerRadius: 4,
-                    displayColors: true
-                }
+                legend: { labels: { color: 'white' } }
             }
         }
     });
 
-    // --- Capacity Formulas from the Paper ---
-    function calculateCapacityMM1(lambda, kappa) {
-        const alpha = 1 / (1 + kappa);
-        const denom = 1 - (alpha * lambda);
-        if (denom <= 0.001) return 0; // Avoid division by zero/singularity visuals
-        return (lambda * (1 - lambda)) / denom;
+    updateDashboard(); // Initial Draw
+}
+
+function updateChart(kappa, currentLambda) {
+    if(!capacityChart) return;
+
+    const dataMM1 = [];
+    const dataMD1 = [];
+    const labels = [];
+
+    // Generate curves
+    for(let l=0.0; l<1.0; l+=0.02) {
+        labels.push(l.toFixed(2));
+        dataMM1.push(calcMM1(l, kappa));
+        dataMD1.push(calcMD1(l, kappa));
     }
 
-    function calculateCapacityMD1(lambda, kappa) {
-        const alpha = (1 - Math.exp(-kappa)) / kappa;
-        const denom = 1 - (alpha * lambda);
-        if (denom <= 0.001) return 0;
-        return (lambda * (1 - lambda)) / denom;
-    }
+    // Update chart datasets
+    capacityChart.data.labels = labels;
+    capacityChart.data.datasets[0].data = dataMM1;
+    capacityChart.data.datasets[1].data = dataMD1;
 
-    // --- Update Function ---
-    function updateChart() {
-        const k = parseFloat(kappaSlider.value);
-        const l = parseFloat(lambdaSlider.value);
-        
-        valKappa.textContent = k.toFixed(2);
-        valLambda.textContent = l.toFixed(2);
+    // Update "Current Point" marker
+    const currentCap = calcMM1(currentLambda, kappa);
+    capacityChart.data.datasets[2].data = [{x: currentLambda, y: currentCap}];
 
-        const labels = [];
-        const dataMM1 = [];
-        const dataMD1 = [];
-        
-        // Plot curve from 0.01 to 0.99
-        for(let i=1; i<100; i++) {
-            const lam = i/100;
-            labels.push(lam.toFixed(2));
-            dataMM1.push(calculateCapacityMM1(lam, k));
-            dataMD1.push(calculateCapacityMD1(lam, k));
-        }
+    capacityChart.update();
+}
 
-        window.myChart.data.labels = labels;
-        window.myChart.data.datasets[0].data = dataMM1;
-        window.myChart.data.datasets[1].data = dataMD1;
-        
-        // Calculate Specific Point
-        const currentMM1 = calculateCapacityMM1(l, k);
-        const currentMD1 = calculateCapacityMD1(l, k);
-        
-        resMM1.textContent = currentMM1.toFixed(3);
-        resMD1.textContent = currentMD1.toFixed(3);
+// Listeners
+document.getElementById('kappaSlider').addEventListener('input', updateDashboard);
+document.getElementById('lambdaSlider').addEventListener('input', updateDashboard);
 
-        window.myChart.update('none'); // Update without full re-animation for smoothness
-    }
 
-    kappaSlider.addEventListener('input', updateChart);
-    lambdaSlider.addEventListener('input', updateChart);
-    
-    // Initial call
-    updateChart();
+// --- BIT-FLIP SIMULATION LOGIC ---
+
+// Updates Simulation labels
+document.getElementById('simLambda').addEventListener('input', (e) => {
+    document.getElementById('simLambdaVal').innerText = e.target.value;
+});
+document.getElementById('simKappa').addEventListener('input', (e) => {
+    document.getElementById('simKappaVal').innerText = e.target.value;
 });
 
-// --- Bit-Flip Simulation Logic ---
 function runSimulation() {
-    const msg = document.getElementById('sim-input').value;
-    const lam = parseFloat(document.getElementById('sim-lambda').value);
-    const kappa = parseFloat(document.getElementById('sim-kappa').value);
-    const consoleDiv = document.getElementById('sim-console');
+    const inputStr = document.getElementById('simInput').value;
+    const lambda = parseFloat(document.getElementById('simLambda').value);
+    const kappa = parseFloat(document.getElementById('simKappa').value);
+    const consoleDiv = document.getElementById('consoleOutput');
 
-    consoleDiv.innerHTML = '';
-    
-    // Binary conversion
-    let binaryMsg = '';
-    for (let i = 0; i < msg.length; i++) {
-        binaryMsg += msg[i].charCodeAt(0).toString(2).padStart(8, '0');
-    }
+    consoleDiv.innerText = `> Initializing Transmission...\n> Message: "${inputStr}"\n> Lambda: ${lambda} | Kappa: ${kappa}\n\n`;
 
-    consoleDiv.innerHTML += `<div><span class="text-blue-400">></span> Transforming "${msg}" to ${binaryMsg.length} qubits...</div>`;
-
-    let errors = 0;
+    let outputStr = "";
     let totalWait = 0;
-    let outputBinary = '';
+    let errors = 0;
+    let bits = inputStr.length * 8; // approx bits
 
-    let currentTime = 0;
-    let departureTime = 0;
-
-    for(let i=0; i<binaryMsg.length; i++) {
-        // Inter-arrival (Exp(lambda))
-        const interArrival = -Math.log(1 - Math.random()) / lam;
-        currentTime += interArrival;
-
-        const arrival = currentTime;
-        const serviceStart = Math.max(arrival, departureTime);
-        const waitTime = serviceStart - arrival;
+    // Convert string to binary array (conceptual simulation)
+    // We simulate character by character
+    
+    // M/M/1 Average Wait Time Formula: W = 1 / (mu - lambda) assuming mu=1
+    // However, wait times are random exponential.
+    // Wait time W is distributed as Exp(1 - lambda) for M/M/1.
+    // Mean wait = 1/(1-lambda) *service included* or just queue? 
+    // Paper uses total sojourn time typically. M/M/1 sojourn is Exp(mu-lambda).
+    const serviceRate = 1.0; 
+    
+    // Simulate each character
+    for(let i=0; i<inputStr.length; i++) {
+        // Generate a random wait time for this packet based on distribution
+        // T ~ Exp(1 - lambda) => T = -ln(U) / (1 - lambda)
+        const u = Math.random();
+        const waitTime = -Math.log(u) / (serviceRate - lambda);
         totalWait += waitTime;
 
-        // Service Time (Exp(mu=1))
-        const serviceTime = -Math.log(1 - Math.random());
-        departureTime = serviceStart + serviceTime;
+        // Calculate Probability of Bit Flip: phi(W) = 0.5 * (1 - exp(-kappa * W))
+        const probFlip = 0.5 * (1 - Math.exp(-kappa * waitTime));
 
-        // Bit Flip Probability
-        const errorProb = 0.5 * (1 - Math.exp(-kappa * waitTime));
+        // Let's see if the char gets corrupted
+        // We simulate this by checking if a random check falls below probability
+        // Since a char is 8 bits, we simulate chance of *visible* corruption
         
-        const originalBit = binaryMsg[i];
-        let receivedBit = originalBit;
-        let status = "OK";
-
-        if(Math.random() < errorProb) {
-            receivedBit = originalBit === '0' ? '1' : '0';
+        const isCorrupted = Math.random() < (probFlip * 8); // Rough approx for visualization
+        
+        if(isCorrupted) {
+            outputStr += randomChar();
             errors++;
-            status = "FLIP";
+        } else {
+            outputStr += inputStr[i];
         }
 
-        outputBinary += receivedBit;
-        
-        // Log first 8 qubits or any errors found
-        if(i < 8 || status === "FLIP") {
-            const color = status === "FLIP" ? "text-rose-500 font-bold" : "text-green-500";
-            consoleDiv.innerHTML += `<div class="font-mono border-l-2 border-slate-700 pl-2 mb-1 opacity-90 hover:opacity-100 transition">
-                Q[${i.toString().padStart(2, '0')}] Wait:${waitTime.toFixed(2)}s | ErrProb:${errorProb.toFixed(2)} | <span class="${color}">${status}</span>
-            </div>`;
+        // Add detailed log for first few
+        if(i < 3) {
+             consoleDiv.innerText += `Packet ${i}: Wait ${waitTime.toFixed(3)}s -> ErrProb ${(probFlip*100).toFixed(1)}% -> ${isCorrupted ? "CORRUPT" : "OK"}\n`;
         }
     }
-    
-    const avgWait = totalWait / binaryMsg.length;
-    const ber = errors / binaryMsg.length;
-    
-    // Note: This capacity calc is for M/M/1 Erasure, used here as a proxy for "Performance"
-    const theoreticalCap = (lam * (1 - lam) / (1 - (1/(1+kappa))*lam)).toFixed(3);
 
-    document.getElementById('sim-wait').innerText = avgWait.toFixed(2) + "s";
-    document.getElementById('sim-ber').innerText = (ber * 100).toFixed(1) + "%";
-    document.getElementById('sim-cap').innerText = theoreticalCap;
+    consoleDiv.innerText += `...\n> Transmission Complete.\n> Received: "${outputStr}"`;
 
-    consoleDiv.innerHTML += `<div class="mt-4 text-white border-t border-slate-600 pt-2"><span class="text-green-400">></span> Transmission Complete. ${errors} errors.</div>`;
-    consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    // Update stats
+    const avgWait = totalWait / inputStr.length;
+    document.getElementById('simAvgWait').innerText = avgWait.toFixed(3) + 's';
+    document.getElementById('simBer').innerText = ((errors / inputStr.length)*100).toFixed(1) + '%';
+    
+    // Theoretical Capacity (Corollary 2)
+    // C = lambda * (1 - E[H(phi(W))])
+    // This is complex to calc on fly, using approximation for display:
+    // Low wait = High Cap. 
+    const approxCap = (lambda * (1 - (avgWait * kappa * 0.5))).toFixed(2); // very rough heuristic
+    document.getElementById('simCap').innerText = "~" + Math.max(0, approxCap) + " bits/s";
+}
+
+function randomChar() {
+    const chars = "?#@&%$!";
+    return chars.charAt(Math.floor(Math.random() * chars.length));
 }
