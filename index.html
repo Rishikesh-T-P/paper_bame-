@@ -3,242 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qubits through Queues - Research Explorer</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <title>Qubits through Queues: Interactive Explorer</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Space+Mono&display=swap" rel="stylesheet">
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex flex-col">
+<body>
 
-    <div class="flex flex-col md:flex-row h-full">
-        <aside class="w-full md:w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col h-full overflow-y-auto">
-            <div class="p-6 border-b border-slate-700">
-                <h1 class="text-xl font-bold tracking-tight">Qubits through Queues</h1>
-                <p class="text-xs text-slate-400 mt-2">Interactive Explorer <br>(arXiv:1804.00906)</p>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>Qubits <br><span>through</span><br> Queues</h2>
+                <p class="subtitle">Interactive Research Explorer<br>(arXiv:1804.00906)</p>
             </div>
-            <nav class="p-4 space-y-2 flex-1">
-                <button onclick="switchTab('problem')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition active-nav bg-slate-800 text-white border-l-4 border-indigo-500" id="btn-problem">1. The Problem</button>
-                <button onclick="switchTab('erasure')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition border-l-4 border-transparent" id="btn-erasure">2. Erasure Channel</button>
-                <button onclick="switchTab('bitflip')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition border-l-4 border-transparent" id="btn-bitflip">3. Bit-Flip Channel</button>
-                <button onclick="switchTab('insights')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition border-l-4 border-transparent" id="btn-insights">4. Key Insights</button>
-            </nav>
-            <div class="p-4 text-xs text-slate-500 border-t border-slate-800">
-                Based on Chatterjee, Jagannathan, Mandayam (2019)
+            <ul class="nav-links">
+                <li class="active" onclick="showSection('problem')">1. The Problem</li>
+                <li onclick="showSection('erasure')">2. Erasure Channel</li>
+                <li onclick="showSection('bitflip')">3. Bit-Flip Channel</li>
+                <li onclick="showSection('insights')">4. Key Insights</li>
+            </ul>
+            <div class="footer-credit">
+                <p>Based on Chatterjee et al.</p>
             </div>
-        </aside>
+        </nav>
 
-        <main class="flex-1 p-6 md:p-10 overflow-y-auto bg-slate-50">
+        <main class="content">
             
-            <div id="problem" class="tab-content active space-y-8 max-w-4xl mx-auto">
-                <div class="border-l-4 border-indigo-500 pl-6 py-1">
-                    <h2 class="text-3xl font-bold text-slate-900">System Model</h2>
-                    <p class="text-lg text-slate-600">Pages 1-2: Understanding Queue-Induced Decay</p>
-                </div>
-
-                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="text-xl font-bold mb-4 text-slate-800">The "Melting Ice Cream" Problem</h3>
-                    <p class="mb-4 text-slate-600 leading-relaxed">Imagine an ice cream shop where the ice cream starts melting the moment you enter the queue. If the line is short, you get a frozen treat. If the line is long, you get a puddle.</p>
-                    <p class="text-slate-600 leading-relaxed"><strong>Quantum bits (qubits)</strong> behave similarly. They suffer from <strong>decoherence</strong> over time. When we process qubits sequentially (like in a queue), they wait. While they wait, they rot.</p>
-                    
-                    <div class="mt-6 p-5 bg-indigo-50 rounded-lg border border-indigo-100 relative">
-                        <span class="text-4xl absolute top-2 left-2 opacity-10">❝</span>
-                        <p class="text-indigo-900 font-medium italic text-center px-4">
-                            "Is it possible to transmit information through the queue at a rate arbitrarily close to the server's speed?"
-                        </p>
-                        <p class="text-right text-xs font-bold text-indigo-500 mt-2 uppercase tracking-wider">— The Paper's Core Question</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 text-center hover:-translate-y-1 transition duration-300">
-                        <div class="text-4xl mb-3">📥</div>
-                        <h4 class="font-bold text-slate-800">Arrivals ($\lambda$)</h4>
-                        <p class="text-xs text-slate-500 mt-2">Qubits arrive randomly (Poisson) at rate $\lambda$. This is the knob we turn.</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 text-center hover:-translate-y-1 transition duration-300">
-                        <div class="text-4xl mb-3">⏳</div>
-                        <h4 class="font-bold text-slate-800">The Queue ($W$)</h4>
-                        <p class="text-xs text-slate-500 mt-2">Single Server (FIFO). Total waiting time $W$ determines the damage.</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 text-center hover:-translate-y-1 transition duration-300">
-                        <div class="text-4xl mb-3">📉</div>
-                        <h4 class="font-bold text-slate-800">Decoherence</h4>
-                        <p class="text-xs text-slate-500 mt-2">Error probability $1 - e^{-\kappa W}$. $\kappa$ is the physical decay constant.</p>
-                    </div>
+            <section id="problem" class="active-section">
+                <h1>1. The Problem: "Melting Ice Cream"</h1>
+                <div class="card highlight-card">
+                    <h3>The Analogy</h3>
+                    <p>Imagine an ice cream shop where the ice cream starts melting the moment you enter the queue. If the line is short, you get a frozen treat. If the line is long, you get a puddle.</p>
                 </div>
                 
-                <div class="flex justify-end">
-                    <button onclick="switchTab('erasure')" class="group flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-full hover:bg-indigo-700 transition shadow-lg hover:shadow-indigo-200 font-semibold">
-                        Explore the Interactive Graph 
-                        <span class="group-hover:translate-x-1 transition">&rarr;</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="erasure" class="tab-content space-y-6 max-w-6xl mx-auto">
-                <div class="border-l-4 border-emerald-500 pl-6 py-1">
-                    <h2 class="text-3xl font-bold text-slate-900">Capacity of Erasure Queue-Channel</h2>
-                    <p class="text-lg text-slate-600">Pages 4-7: Calculating the "Sweet Spot"</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div class="lg:col-span-4 space-y-6">
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
-                            <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Simulation Controls</h3>
-                            
-                            <div class="mb-6">
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm font-semibold text-slate-700">Decoherence Rate ($\kappa$)</label>
-                                    <span id="val-kappa" class="text-sm font-mono bg-slate-100 px-2 rounded">0.10</span>
-                                </div>
-                                <input type="range" id="kappa-slider" min="0.01" max="1.0" step="0.01" value="0.1">
-                                <p class="text-xs text-slate-400 mt-1">Higher = Faster decay (Unstable hardware)</p>
-                            </div>
-
-                            <div class="mb-6">
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm font-semibold text-slate-700">Arrival Rate ($\lambda$)</label>
-                                    <span id="val-lambda" class="text-sm font-mono bg-slate-100 px-2 rounded">0.50</span>
-                                </div>
-                                <input type="range" id="lambda-slider" min="0.01" max="0.99" step="0.01" value="0.5">
-                                <p class="text-xs text-slate-400 mt-1">Throughput attempts (Server rate $\mu=1$)</p>
-                            </div>
-                            
-                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-slate-600 font-medium">Capacity (M/M/1):</span>
-                                    <span id="res-mm1" class="font-mono font-bold text-blue-600 text-lg">0.000</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-slate-600 font-medium">Capacity (M/D/1):</span>
-                                    <span id="res-md1" class="font-mono font-bold text-emerald-600 text-lg">0.000</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 text-sm text-amber-900">
-                            <strong>Theorem 4 Insight:</strong> <br>
-                            Notice how the Green line (Deterministic M/D/1) is always higher? Reducing variance in processing time always improves capacity because <em>Jensen's Inequality</em> favors stability.
-                        </div>
+                <div class="concept-grid">
+                    <div class="concept-item">
+                        <span class="icon">📥</span>
+                        <h4>Arrivals ($\lambda$)</h4>
+                        <p>Qubits arrive randomly (Poisson process) at rate $\lambda$. This is the throughput "knob" we can turn.</p>
                     </div>
-
-                    <div class="lg:col-span-8 bg-white p-4 rounded-xl shadow-lg border border-slate-200 flex flex-col">
-                        <div class="relative flex-1 w-full h-80 lg:h-auto min-h-[400px]">
-                            <canvas id="capacityChart"></canvas>
-                        </div>
+                    <div class="concept-item">
+                        <span class="icon">⏳</span>
+                        <h4>The Queue ($W$)</h4>
+                        <p>Single server (FIFO). Processing takes time. The total waiting time $W$ determines the damage.</p>
+                    </div>
+                    <div class="concept-item">
+                        <span class="icon">⚛️</span>
+                        <h4>Decoherence</h4>
+                        <p>Probability of error increases exponentially with wait time: $e^{-\kappa W}$.</p>
                     </div>
                 </div>
 
-                <div class="bg-slate-900 text-slate-300 p-6 rounded-lg font-mono text-sm overflow-x-auto">
-                    <p class="mb-2 text-indigo-400 font-bold uppercase tracking-widest text-xs">Under the Hood: The Formulas</p>
-                    <div class="grid md:grid-cols-2 gap-4">
+                <div class="quote-box">
+                    "Is it possible to transmit information through the queue at a rate arbitrarily close to the server's speed?" 
+                    <br><strong>— The Paper's Core Question</strong>
+                </div>
+                <button class="next-btn" onclick="showSection('erasure')">Explore the Erasure Model →</button>
+            </section>
+
+            <section id="erasure" style="display:none;">
+                <h1>2. Erasure Channel Capacity</h1>
+                <p>In this model, if a qubit waits too long, it vanishes (becomes an erasure $\mathcal{E}$)[cite: 161].</p>
+
+                <div class="dashboard">
+                    <div class="controls panel">
+                        <h3>Lab Controls</h3>
+                        
+                        <label>Decoherence Rate ($\kappa$)</label>
+                        <input type="range" id="kappaSlider" min="0.01" max="1.0" step="0.01" value="0.1">
+                        <div class="value-display" id="kappaValue">0.10</div>
+                        <p class="small-text">High $\kappa$ = Fast decay (Unstable hardware)</p>
+                        
+                        <label>Arrival Rate ($\lambda$)</label>
+                        <input type="range" id="lambdaSlider" min="0.01" max="0.99" step="0.01" value="0.5">
+                        <div class="value-display" id="lambdaValue">0.50</div>
+                        <p class="small-text">Attempts per unit time ($\mu=1$)</p>
+
+                        <div class="stat-box">
+                            <h4>Current Capacity (M/M/1)</h4>
+                            <h2 id="mm1-stat">0.00</h2>
+                            <p>Theorem 2</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Current Capacity (M/D/1)</h4>
+                            <h2 id="md1-stat">0.00</h2>
+                            <p>Theorem 3</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-container panel">
+                        <canvas id="capacityChart"></canvas>
+                        <div class="caption">
+                            <strong>Theorem 4 Insight:</strong> <span style="color:#4caf50">M/D/1 (Deterministic)</span> is always better than <span style="color:#2196f3">M/M/1 (Random)</span> because Jensen's Inequality favors stability[cite: 284].
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="bitflip" style="display:none;">
+                <h1>3. Bit-Flip Simulation</h1>
+                <p>Here, decoherence doesn't erase the bit, it <strong>flips</strong> it. As wait time $W \to \infty$, error $\to 0.5$ (pure noise).</p>
+
+                <div class="sim-lab">
+                    <div class="input-group">
+                        <label>Message to Send:</label>
+                        <input type="text" id="simInput" value="HELLO WORLD" placeholder="Type text...">
+                    </div>
+                    
+                    <div class="sim-controls">
                         <div>
-                            <p class="text-white font-bold mb-1">Theorem 2 (M/M/1 Random Service)</p>
-                            <p class="text-slate-400">C = λ(1 - λ) / (1 - αλ) <br> <span class="text-xs">where α = 1/(1+κ)</span></p>
+                            <label>Arrival Rate ($\lambda$): <span id="simLambdaVal">0.8</span></label>
+                            <input type="range" id="simLambda" min="0.1" max="0.99" step="0.1" value="0.8">
                         </div>
                         <div>
-                            <p class="text-white font-bold mb-1">Theorem 3 (M/D/1 Deterministic)</p>
-                            <p class="text-slate-400">C = λ(1 - λ) / (1 - αλ) <br> <span class="text-xs">where α = (1 - e<sup>-κ</sup>)/κ</span></p>
+                            <label>Decoherence ($\kappa$): <span id="simKappaVal">0.2</span></label>
+                            <input type="range" id="simKappa" min="0.05" max="1.0" step="0.05" value="0.2">
                         </div>
+                        <button class="run-btn" onclick="runSimulation()">Transmitting Data...</button>
                     </div>
-                </div>
-            </div>
 
-            <div id="bitflip" class="tab-content space-y-8 max-w-4xl mx-auto">
-                <div class="border-l-4 border-rose-500 pl-6 py-1">
-                    <h2 class="text-3xl font-bold text-slate-900">Bit-Flip Simulation</h2>
-                    <p class="text-lg text-slate-600">Pages 7-8: When decoherence flips bits instead of erasing them.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
-                        <h3 class="font-bold text-lg mb-4 text-slate-800">Transmission Lab</h3>
-                        <div class="space-y-4 flex-1">
-                            <div>
-                                <label class="text-xs font-bold uppercase text-slate-500">Message to Send</label>
-                                <input type="text" id="sim-input" value="Hello Quantum World" class="w-full mt-1 p-3 border border-slate-300 rounded-lg font-mono focus:ring-2 focus:ring-rose-500 outline-none transition">
+                    <div class="sim-output">
+                        <div class="console">
+                            <div class="console-header">// System Ready...</div>
+                            <div class="console-body" id="consoleOutput">
+                                // Waiting for transmission...
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs font-bold uppercase text-slate-500">Arrival Rate ($\lambda$)</label>
-                                    <input type="number" id="sim-lambda" value="0.8" step="0.1" max="0.99" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono">
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold uppercase text-slate-500">Decoherence ($\kappa$)</label>
-                                    <input type="number" id="sim-kappa" value="0.2" step="0.1" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono">
-                                </div>
-                            </div>
-                            <button onclick="runSimulation()" class="w-full bg-rose-600 text-white py-3 rounded-lg hover:bg-rose-700 transition font-bold shadow-lg hover:shadow-rose-200 mt-auto">
-                                Transmit Data &rarr;
-                            </button>
                         </div>
-                    </div>
-
-                    <div class="bg-slate-900 p-6 rounded-xl shadow-inner font-mono text-green-400 overflow-hidden relative flex flex-col h-80 md:h-96">
-                        <div class="absolute top-0 right-0 p-2 text-xs text-slate-500 font-sans font-bold uppercase tracking-wider">System Log</div>
-                        <div id="sim-console" class="space-y-1 flex-1 overflow-y-auto text-xs md:text-sm pt-4 pr-2 custom-scrollbar">
-                            <span class="text-slate-500">// System Ready...</span><br>
-                            <span class="text-slate-500">// Waiting for transmission...</span>
+                        <div class="stats-row">
+                            <div class="stat">Avg Wait: <span id="simAvgWait">-</span></div>
+                            <div class="stat">Bit Error Rate: <span id="simBer">-</span></div>
+                            <div class="stat">Theoretical Cap: <span id="simCap">-</span></div>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="bg-white p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row justify-around text-center gap-4">
-                    <div class="p-2">
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider">Avg Wait Time</div>
-                        <div id="sim-wait" class="text-3xl font-bold text-slate-800 mt-1">-</div>
+            <section id="insights" style="display:none;">
+                <h1>4. Key Insights</h1>
+                <div class="insight-grid">
+                    <div class="card">
+                        <div class="number">1</div>
+                        <h3>Don't Maximize Throughput</h3>
+                        <p>In classical networks, we push $\lambda \to \mu$. In quantum networks, this is fatal. The "Sweet Spot" $\lambda^*$ is often significantly lower than the server rate to prevent queue buildup[cite: 49].</p>
                     </div>
-                    <div class="w-px bg-slate-200 hidden md:block"></div>
-                    <div class="p-2">
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider">Bit Error Rate</div>
-                        <div id="sim-ber" class="text-3xl font-bold text-rose-600 mt-1">-</div>
+                    <div class="card">
+                        <div class="number">2</div>
+                        <h3>Kill the Jitter</h3>
+                        <p>Deterministic processing times ($M/D/1$) are strictly better than variable ones. Quantum gates should be designed for consistency[cite: 74].</p>
                     </div>
-                    <div class="w-px bg-slate-200 hidden md:block"></div>
-                    <div class="p-2">
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider">Theoretical Cap</div>
-                        <div id="sim-cap" class="text-3xl font-bold text-slate-800 mt-1">-</div>
+                    <div class="card">
+                        <div class="number">3</div>
+                        <h3>Side Information Helps</h3>
+                        <p>Proposition 1 highlights that if the receiver knows the exact arrival/departure times, capacity increases because timing data removes uncertainty about the "rot"[cite: 116].</p>
+                    </div>
+                    <div class="card">
+                        <div class="number">4</div>
+                        <h3>Beyond Quantum</h3>
+                        <p>These models apply to any system with "impatience," such as Crowdsourcing (workers get bored) or Real-time IoT (data becomes stale)[cite: 55].</p>
                     </div>
                 </div>
-            </div>
-
-            <div id="insights" class="tab-content space-y-8 max-w-5xl mx-auto">
-                <div class="border-l-4 border-amber-500 pl-6 py-1">
-                    <h2 class="text-3xl font-bold text-slate-900">Design Implications</h2>
-                    <p class="text-lg text-slate-600">Conclusions for Quantum Network Architects</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 relative overflow-hidden group hover:border-amber-400 transition transform hover:-translate-y-1">
-                        <div class="absolute top-0 right-0 bg-slate-100 text-slate-400 font-bold text-8xl opacity-20 -mr-6 -mt-4 group-hover:text-amber-500 transition duration-500">1</div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800">Don't Maximize Throughput</h3>
-                        <p class="text-slate-600 leading-relaxed text-sm">In classical networks, we push $\lambda \to \mu$. In quantum networks, this is fatal. The "Sweet Spot" $\lambda^*$ is often significantly lower than the server rate to prevent queue buildup and subsequent decoherence.</p>
-                    </div>
-
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 relative overflow-hidden group hover:border-amber-400 transition transform hover:-translate-y-1">
-                        <div class="absolute top-0 right-0 bg-slate-100 text-slate-400 font-bold text-8xl opacity-20 -mr-6 -mt-4 group-hover:text-amber-500 transition duration-500">2</div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800">Kill the Jitter</h3>
-                        <p class="text-slate-600 leading-relaxed text-sm">Deterministic processing times ($M/D/1$) are strictly better than variable ones. Quantum gates and detectors should be designed for <strong>consistency</strong> rather than just average speed.</p>
-                    </div>
-
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 relative overflow-hidden group hover:border-amber-400 transition transform hover:-translate-y-1">
-                        <div class="absolute top-0 right-0 bg-slate-100 text-slate-400 font-bold text-8xl opacity-20 -mr-6 -mt-4 group-hover:text-amber-500 transition duration-500">3</div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800">Side Information Helps</h3>
-                        <p class="text-slate-600 leading-relaxed text-sm">Proposition 1 highlights that if the receiver knows the exact arrival/departure times, capacity increases. Timing information effectively removes uncertainty about how much "rot" occurred.</p>
-                    </div>
-
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 relative overflow-hidden group hover:border-amber-400 transition transform hover:-translate-y-1">
-                        <div class="absolute top-0 right-0 bg-slate-100 text-slate-400 font-bold text-8xl opacity-20 -mr-6 -mt-4 group-hover:text-amber-500 transition duration-500">4</div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800">Beyond Quantum</h3>
-                        <p class="text-slate-600 leading-relaxed text-sm">These models apply to any system with "impatience" or deadlines, such as <strong>Crowdsourcing</strong> (workers get bored waiting) or <strong>Real-time IoT</strong> (data becomes stale).</p>
-                    </div>
-                </div>
-            </div>
+            </section>
 
         </main>
     </div>
 
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
