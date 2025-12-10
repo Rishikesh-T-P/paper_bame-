@@ -9,7 +9,7 @@
 }
 
 .chart-container {
-    height: 150px;   /* <--- FIXED HEIGHT */
+    height: 100px;   /* <--- FIXED HEIGHT */
     position: relative;
 }
 
